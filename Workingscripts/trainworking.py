@@ -24,22 +24,16 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=24)
     parser.add_argument('--n_gpu', type=int, default=1)
     parser.add_argument('--deterministic', type=int, default=1)
-    parser.add_argument('--base_lr', type=float, default=0.0005)
+    parser.add_argument('--base_lr', type=float, default=0.01)
     parser.add_argument('--img_size', type=int, default=224)
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--n_skip', type=int, default=3)
     parser.add_argument('--vit_name', type=str, default='R50-ViT-B_16')
     parser.add_argument('--vit_patches_size', type=int, default=16)
-
-    # NEW: Additions for improved training logic
-    parser.add_argument('--use_focal', action='store_true', help="Enable focal loss combo")
-    parser.add_argument('--scheduler', type=str, default='cosine', choices=['cosine', 'poly', 'step'])
-    parser.add_argument('--optimizer', type=str, default='adamw', choices=['adamw', 'sgd'])
-    parser.add_argument('--tta', action='store_true', help="Enable test-time augmentation")
     return parser.parse_args()
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method('spawn', force=True)
+    multiprocessing.set_start_method('spawn', force=True)  # must be in main guard on Windows
     args = parse_args()
 
     dataset_config = {
@@ -78,18 +72,12 @@ if __name__ == "__main__":
         snapshot_path += f'_vitpatch{args.vit_patches_size}'
     if args.max_iterations != 30000:
         snapshot_path += f'_{str(args.max_iterations)[:2]}k'
-    if args.max_epochs != 150:
+    if args.max_epochs != 30:
         snapshot_path += f'_epo{args.max_epochs}'
     snapshot_path += f'_bs{args.batch_size}'
-    if args.base_lr != 0.0005:
+    if args.base_lr != 0.01:
         snapshot_path += f'_lr{args.base_lr}'
     snapshot_path += f'_{args.img_size}'
-    if args.use_focal:
-        snapshot_path += '_focal'
-    if args.optimizer != 'adamw':
-        snapshot_path += f'_{args.optimizer}'
-    if args.scheduler != 'cosine':
-        snapshot_path += f'_{args.scheduler}'
     if args.seed != 1234:
         snapshot_path += f'_s{args.seed}'
 
